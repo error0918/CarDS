@@ -14,4 +14,10 @@ l: 가로선이 왼쪽에서 만나는 좌표, 0 ~ 2
 r: 가로선이 오른쪽에서 만나는 좌표, 0 ~ 2
 l, r은 중앙이 0, 위로부터 l[0]/r[0], l[1]/r[1], l[2]/r[2]
 
-canny 창: 차선 인식 상황
+canny 창
+차선 인식 상황
+
+요구사항
+pip install jajucha
+pip install opencv-python
+pip install keyboard
