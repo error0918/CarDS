@@ -56,22 +56,22 @@ class Planning(BasePlanning):
 
         sys.stdout.write(
             "CarDS\n" +
-            "situation = %s\n\n" % ("None" if result_list[0] is None else result_list[0]) +
+            "situation = %s \n" % ("None" if result_list[0] is None else result_list[0]) +
             "front_lidar = %d\n" % front_lidar +
             "steer = %d last_steer = %d\n"
-            % (-1 if result_list[1] is None else result_list[1],
-               -1 if self.last_steer is None else self.last_steer) +
-            "velocity = %s\n"
-            % ("-1" if result_list[2] is None else str(result_list[2])) +
+            % (util.not_none(result_list[1], -1), util.not_none(self.last_steer, -1)) +
+            "velocity = %d\n"
+            % util.not_none(result_list[2], -1) +
             "l[0] = %d l[1] = %d l[2] = %d | r[0] = %d r[1] = %d r[2] = %d\n"
             % (l[0], l[1], l[2], r[0], r[1], r[2]) +
             "v[0] = %d v[1] = %d v[2] = %d v[3] = %d v[4] = %d v[5] = %d\n"
             % (v[0], v[1], v[2], v[3], v[4], v[5]) +
-            "\n\n"
+            "\n" +
+            "\n"
         )
 
-        return difference_data["steer"] + self.last_steer if result[1] is None else result[1], \
-            module.base_velocity if result[2] is None else result[2]
+        return difference_data["steer"] + util.not_none(result[1], self.last_steer), \
+            util.not_none(result[2], config.base_velocity)
 
 
 # Run

@@ -27,9 +27,9 @@ def operation(
     for op_result in result_list:
         if op_result is not None:
             op_list = list(op_result)
-            result = op_list[0] if op_list[0] is not None else result[0], \
-                op_list[1] if op_list[1] is not None else result[1], \
-                op_list[2] if op_list[2] is not None else result[2]
+            result = util.not_none(op_list[0], result[0]), \
+                util.not_none(op_list[1], result[1]), \
+                util.not_none(op_list[2], result[2])
     return result
 
 
