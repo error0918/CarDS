@@ -26,15 +26,10 @@ class Planning(BasePlanning):
             front_lidar,  # 전면 라이다 센서
             rear_lidar  # 후면 라이다 센서 (없음)
     ):
-        self.imshow('canny', self.canny(front_image))  # canny 창 (차선 인식 상황)
+        if config.is_canny_show:
+            self.imshow('canny', self.canny(front_image))
+
         v, l, r = self.gridFront(front_image, cols=7, rows=3)
-        # situation: 도로 상황
-        # steer: 조향
-        # velocity: 속력
-        # v: 세로선, 0 ~ 6 (상단: 255, 하단: 0)
-        # l: 가로선이 왼쪽에서 만나는 좌표, 0 ~ 2
-        # r: 가로선이 오른쪽에서 만나는 좌표, 0 ~ 2
-        # l, r은 중앙이 0, 위로부터 l[0]/r[0], l[1]/r[1], l[2]/r[2]
 
         difference_data = module.difference[module.B422]
         data: config.data_type = (

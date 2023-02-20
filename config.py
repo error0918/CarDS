@@ -8,6 +8,8 @@ Copyright 2023. jtaeyeon05 all rights reserved
 """
 
 
+is_canny_show = False
+
 left_steer = -80
 right_steer = 80
 base_velocity = 80
