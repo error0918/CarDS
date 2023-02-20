@@ -1,10 +1,10 @@
 from enum import Enum
-from internal import config
 from config import data_type
 from config import result_type
 from internal import halt
 from internal import util
 from typing import List
+import config
 import keyboard
 
 """
@@ -152,6 +152,13 @@ def right_three_lane(
         return None, None, None
 
 
+# TODO
+def t_three_lane(
+        data: data_type, direction: Direction = Direction.Stop
+) -> result_type:
+    return None, None, None
+
+
 def lidar_scan(
         data: data_type, direction: Direction = Direction.Stop, scan_distance: int = 400
 ) -> result_type:
@@ -179,8 +186,8 @@ def manual_drive() -> result_type:
     wd = ["9", "page up"]
     sa = ["1", "end"]
     sd = ["3", "page down"]
-    shift = ["shift", "+"]
-    control = ["control", "-"]
+    shift = ["shift", "*"]
+    control = ["control", "/"]
     stop = ["5", "clear"]
     if util.detect_keys(w + s + a + d + wa + wd + sa + sd + shift + control + stop):
         situation = "수동주행 "
@@ -235,3 +242,11 @@ def manual_drive() -> result_type:
 def esc_to_halt():
     if keyboard.is_pressed("esc"):
         halt.halt()
+
+
+# TODO: Use on Real Situation
+def control_base_velocity():
+    if util.detect_keys(["+", "="]):
+        config.base_velocity += 1
+    elif util.detect_keys(["-", "_"]):
+        config.base_velocity -= 1

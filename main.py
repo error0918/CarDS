@@ -48,11 +48,13 @@ class Planning(BasePlanning):
                 # module.four_lane(data=data, direction=module.Direction.Straight),
                 module.left_three_lane(data=data, direction=module.Direction.Straight),
                 module.right_three_lane(data=data, direction=module.Direction.Straight),
+                module.t_three_lane(data=data, direction=module.Direction.Left),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
                 module.manual_drive()
             ]
         )
         module.esc_to_halt()
+        module.control_base_velocity()
 
         result_list = list(result)
         self.last_steer = result_list[2]
