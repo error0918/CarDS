@@ -1,4 +1,5 @@
 from internal import module
+from internal import util
 from jajucha.planning import BasePlanning
 from jajucha.graphics import Graphics
 import sys
@@ -77,6 +78,7 @@ class Planning(BasePlanning):
 
 
 # Run
+util.run_message("main")
 graphics = Graphics(Planning)
 graphics.root.mainloop()
 graphics.exit()

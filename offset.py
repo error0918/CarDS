@@ -1,11 +1,12 @@
-import config
+from internal import util
 from jajucha.planning import BasePlanning
 from jajucha.graphics import Graphics
+import config
 import sys
 import keyboard
 
 """
-CarDS - test.py
+CarDS - offset.py
 Copyright 2023. jtaeyeon05 all rights reserved 
 """
 
@@ -47,6 +48,7 @@ class TestPlanning(BasePlanning):
 
 
 # Run
+util.run_message("offset")
 graphics = Graphics(TestPlanning)
 graphics.root.mainloop()
 graphics.exit()
