@@ -1,6 +1,6 @@
 from enum import Enum
-from config import data_type
-from config import result_type
+from data.data import *
+from data.result import *
 from internal import halt
 from internal import util
 from typing import List
@@ -21,21 +21,22 @@ class Direction(Enum):
 
 
 def operation(
-        result_list: List[result_type]
-) -> result_type:
-    result: result_type = (None, None, None)
+        result_list: List[Result]
+) -> Result:
+    result = Result()
     for op_result in result_list:
         if op_result is not None:
-            op_list = list(op_result)
-            result = util.not_none(op_list[0], result[0]), \
-                util.not_none(op_list[1], result[1]), \
-                util.not_none(op_list[2], result[2])
+            result = Result(
+                situation=util.not_none(op_result.situation, result.situation),
+                steer=util.not_none(op_result.steer, result.steer),
+                velocity=util.not_none(op_result.velocity, result.velocity)
+            )
     return result
 
 
 def default(
-        data: data_type, difference_data
-) -> result_type:
+        data: Data, difference_data
+) -> Result:
     return operation(
         result_list=[
             velocity(data=data),
@@ -48,136 +49,144 @@ def default(
 
 
 def velocity(
-        data: data_type
-) -> result_type:
-    if data[2][0] < data[2][1] < data[2][2] < data[2][3] \
-            and data[2][3] > data[2][4] > data[2][5] > data[2][6] \
-            and -10 < 2 * data[2][5] - (data[2][4] + data[2][6]) < 10 \
-            and -10 < 2 * data[2][1] - (data[2][0] + data[2][2]) < 10:
-        return "직진", None, config.base_velocity + 20
+        data: Data
+) -> Result:
+    if data.v[0] < data.v[1] < data.v[2] < data.v[3] \
+            and data.v[3] > data.v[4] > data.v[5] > data.v[6] \
+            and -10 < 2 * data.v[5] - (data.v[4] + data.v[6]) < 10 \
+            and -10 < 2 * data.v[1] - (data.v[0] + data.v[2]) < 10:
+        return Result(situation="직진", velocity=config.base_velocity + 20)
     else:
-        return None, None, config.base_velocity
+        return Result(velocity=config.base_velocity)
 
 
 def steer(
-        data: data_type, difference_data
-) -> result_type:
-    if data[3][2] < 320 and data[4][2] < 321:
-        if data[3][2] / difference_data["l"][2] < data[4][2] / difference_data["r"][2]:
-            return None, (difference_data["l"][2] - data[3][2]) / 3 + 20, None
+        data: Data, difference_data
+) -> Result:
+    if data.l[2] < 320 and data.r[2] < 321:
+        if data.l[2] / difference_data["l"][2] < data.r[2] / difference_data["r"][2]:
+            return Result(steer=(difference_data["l"][2] - data.l[2]) / 3 + 20)
         else:
-            return None, (data[4][2] - difference_data["r"][2]) / 3 + 20, None
-    elif data[3][2] < 320:
-        return None, (difference_data["l"][2] - data[3][2]) / 3 - 10, None
-    elif data[4][2] < 321:
-        return None, (data[4][2] - difference_data["r"][2]) / 3 + 10, None
+            return Result(steer=(data.r[2] - difference_data["r"][2]) / 3 + 20)
+    elif data.l[2] < 320:
+        return Result(steer=(difference_data["l"][2] - data.l[2]) / 3 - 10)
+    elif data.r[2] < 321:
+        return Result(steer=(data.r[2] - difference_data["r"][2]) / 3 + 10)
 
 
 def curve(
-        data: data_type, difference_data
-) -> result_type:
-    if data[2][3] < 120:
-        if data[2][2] > data[2][3] > data[2][4]:
-            return "곡선 좌회전", (data[4][2] - difference_data["r"][2]) / 3 - 10, config.base_velocity - 15
-        elif data[2][2] < data[2][3] < data[2][4]:
-            return "곡선 우회전", (difference_data["l"][2] - data[3][2]) / 3 + 10, config.base_velocity - 15
+        data: Data, difference_data
+) -> Result:
+    if data.v[3] < 120:
+        if data.v[2] > data.v[3] > data.v[4]:
+            return Result(
+                situation="곡선 좌회전",
+                steer=(data.r[2] - difference_data["r"][2]) / 3 - 10,
+                velocity=config.base_velocity - 15
+            )
+        elif data.v[2] < data.v[3] < data.v[4]:
+            return Result(
+                situation="곡선 우회전",
+                steer=(difference_data["l"][2] - data.l[2]) / 3 + 10,
+                velocity=config.base_velocity - 15
+            )
         else:
-            return "곡선 상태 유지", data[1], config.base_velocity - 15
+            return Result(situation="곡선 상태 유지", steer=data.last_steer, velocity=config.base_velocity - 15)
     else:
-        return None, None, None
+        return Result()
 
 
 def left_right_angle(
-        data: data_type
-) -> result_type:
-    if -15 < (data[2][6] + data[2][3]) - (data[2][4] + data[2][5]) < 15 \
-            and data[2][5] < 160 and data[2][0] > 64 and data[2][2] < data[2][6]:
+        data: Data
+) -> Result:
+    if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
+            and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
         situation = "직각 자회전"
-        return situation, config.right_steer, None
+        return Result(situation=situation, steer=config.right_steer)
     else:
-        return None, None, None
+        return Result()
 
 
 def right_right_angle(
-        data: data_type
-) -> result_type:
-    if -15 < (data[2][6] + data[2][3]) - (data[2][4] + data[2][5]) < 15 \
-            and data[2][5] < 160 and data[2][0] > 64 and data[2][2] < data[2][6]:
+        data: Data
+) -> Result:
+    if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
+            and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
         situation = "직각 우회전"
-        return situation, config.right_steer, None
+        return Result(situation=situation, steer=config.right_steer)
     else:
-        return None, None, None
+        return Result()
 
 
 def four_lane(
-        data: data_type, direction: Direction = Direction.Stop
-) -> result_type:
-    if data[3][1] + data[3][2] == 640 and \
-            data[4][1] + data[4][2] == 642 and \
-            data[2][3] < 120:
+        data: Data, direction: Direction = Direction.Stop
+) -> Result:
+    if data.l[1] + data.l[2] == 640 and \
+            data.r[1] + data.r[2] == 642 and \
+            data.v[3] < 120:
         situation = "사차선"
         if direction == Direction.Straight:
-            return situation, 0, None
+            return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
-            return situation, config.left_steer, None
+            return Result(situation=situation, steer=config.left_steer)
         elif direction == Direction.Right:
-            return situation, config.right_steer, None
+            return Result(situation=situation, steer=config.right_steer)
     else:
-        return None, None, None
+        return Result()
 
 
 def left_three_lane(
-        data: data_type, direction: Direction = Direction.Stop
-) -> result_type:
-    if data[3][1] + data[3][2] == 640 and data[4][1] + data[4][2] == 642 and data[2][3] < 120:
+        data: Data, direction: Direction = Direction.Stop
+) -> Result:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
         situation = "ㅓ자 삼차선"
         if direction == Direction.Straight:
-            return situation, 0, None
+            return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
-            return situation, config.left_steer, None
+            return Result(situation=situation, steer=config.left_steer)
     else:
-        return None, None, None
+        return Result()
 
 
 def right_three_lane(
-        data: data_type, direction: Direction = Direction.Stop
-) -> result_type:
-    if data[3][1] + data[3][2] == 640 and data[4][1] + data[4][2] == 642 and data[2][3] < 120:
+        data: Data, direction: Direction = Direction.Stop
+) -> Result:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
         situation = "ㅏ자 삼차선"
         if direction == Direction.Straight:
-            return situation, 0, None
+            return Result(situation=situation, steer=0)
         elif direction == Direction.Right:
-            return situation, config.right_steer, None
+            return Result(situation=situation, steer=config.right_steer)
     else:
-        return None, None, None
+        return Result()
 
 
 # TODO
 def t_three_lane(
-        data: data_type, direction: Direction = Direction.Stop
-) -> result_type:
-    return None, None, None
+        data: Data, direction: Direction = Direction.Stop
+) -> Result:
+    return Result(situation=None, steer=None, velocity=None)
 
 
 def lidar_scan(
-        data: data_type, direction: Direction = Direction.Stop, scan_distance: int = 400
-) -> result_type:
+        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 400
+) -> Result:
     situation = "장애물 인식"
-    if 0 < data[0] < scan_distance:
+    if 0 < data.front_lidar < scan_distance:
         if direction == Direction.Straight:
-            return situation, 0, None
+            return Result(situation=situation, steer=0, velocity=None)
         elif direction == Direction.Left:
-            return situation, config.left_steer, None
+            return Result(situation=situation, steer=config.left_steer, velocity=None)
         elif direction == Direction.Right:
-            return situation, config.right_steer, None
+            return Result(situation=situation, steer=config.right_steer, velocity=None)
         else:
-            return situation, 0, 0
+            return Result(situation=situation, steer=0, velocity=0)
     else:
-        return None, None, None
+        return Result()
 
 
 # TODO: Use on Real Situation
-def manual_drive() -> result_type:
+def manual_drive() -> Result:
     w = ["W", "w", "8", "up"]
     s = ["S", "s", "2", "down"]
     a = ["A", "a", "4", "left"]
@@ -233,9 +242,9 @@ def manual_drive() -> result_type:
             situation += "▣"
             manual_steer = 0
             manual_velocity = 0
-        return situation, manual_steer, manual_velocity
+        return Result(situation=situation, steer=manual_steer, velocity=manual_velocity)
     else:
-        return None, None, None
+        return Result()
 
 
 # TODO: Use on Real Situation

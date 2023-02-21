@@ -1,3 +1,6 @@
+from config import Cars
+from data.data import *
+from data.result import *
 from internal import module
 from internal import util
 from jajucha.planning import BasePlanning
@@ -31,13 +34,16 @@ class Planning(BasePlanning):
 
         v, l, r = self.gridFront(front_image, cols=7, rows=3)
 
-        difference_data = module.difference[module.B422]
-        data: config.data_type = (
-            front_lidar, self.last_steer, v, l, r
+        difference_data = config.difference[Cars.B422]
+        data: Data = Data(
+            second=second,
+            front_lidar=front_lidar,
+            last_steer=self.last_steer,
+            v=v, l=l, r=r
         )
 
         # 배열에서 인덱스가 높을 수록 우선순위 ↑
-        result = module.operation(
+        result: Result = module.operation(
             result_list=[
                 module.default(data=data, difference_data=difference_data),
                 # module.four_lane(data=data, direction=module.Direction.Straight),
@@ -51,17 +57,16 @@ class Planning(BasePlanning):
         module.esc_to_halt()
         module.control_base_velocity()
 
-        result_list = list(result)
-        self.last_steer = result_list[2]
+        self.last_steer = result.steer
 
         sys.stdout.write(
             "CarDS\n" +
-            "situation = %s \n" % ("None" if result_list[0] is None else result_list[0]) +
+            "situation = %s \n" % util.not_none(result.situation, "None") +
             "front_lidar = %d\n" % front_lidar +
             "steer = %d last_steer = %d\n"
-            % (util.not_none(result_list[1], -1), util.not_none(self.last_steer, -1)) +
+            % (util.not_none(result.steer, -1), util.not_none(self.last_steer, -1)) +
             "velocity = %d\n"
-            % util.not_none(result_list[2], -1) +
+            % util.not_none(result.velocity, -1) +
             "l[0] = %d l[1] = %d l[2] = %d | r[0] = %d r[1] = %d r[2] = %d\n"
             % (l[0], l[1], l[2], r[0], r[1], r[2]) +
             "v[0] = %d v[1] = %d v[2] = %d v[3] = %d v[4] = %d v[5] = %d\n"
@@ -70,8 +75,8 @@ class Planning(BasePlanning):
             "\n"
         )
 
-        return difference_data["steer"] + util.not_none(result[1], self.last_steer), \
-            util.not_none(result[2], config.base_velocity)
+        return difference_data.steer + util.not_none(result.steer, self.last_steer), \
+            util.not_none(result.velocity, config.base_velocity)
 
 
 # Run

@@ -30,5 +30,6 @@ def change_absolute_value(value: int, delta: int) -> int:
     else:
         return 0
 
+
 def not_none(value, if_none):
     return if_none if value is None else value
