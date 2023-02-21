@@ -10,5 +10,5 @@ Copyright 2023. jtaeyeon05 all rights reserved
 @dataclass()
 class Result:
     situation: Optional[str] = None
-    steer: Optional[int] = None
+    steer: Optional[float] = None
     velocity: Optional[int] = None

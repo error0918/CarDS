@@ -1,5 +1,6 @@
 from enum import Enum
 from data.data import *
+from data.difference import *
 from data.result import *
 from internal import halt
 from internal import util
@@ -35,7 +36,7 @@ def operation(
 
 
 def default(
-        data: Data, difference_data
+        data: Data, difference_data: Difference
 ) -> Result:
     return operation(
         result_list=[
@@ -61,33 +62,33 @@ def velocity(
 
 
 def steer(
-        data: Data, difference_data
+        data: Data, difference_data: Difference
 ) -> Result:
     if data.l[2] < 320 and data.r[2] < 321:
-        if data.l[2] / difference_data["l"][2] < data.r[2] / difference_data["r"][2]:
-            return Result(steer=(difference_data["l"][2] - data.l[2]) / 3 + 20)
+        if data.l[2] / difference_data.l[2] < data.r[2] / difference_data.r[2]:
+            return Result(steer=(difference_data.l[2] - data.l[2]) / 3 + 20)
         else:
-            return Result(steer=(data.r[2] - difference_data["r"][2]) / 3 + 20)
+            return Result(steer=(data.r[2] - difference_data.r[2]) / 3 + 20)
     elif data.l[2] < 320:
-        return Result(steer=(difference_data["l"][2] - data.l[2]) / 3 - 10)
+        return Result(steer=(difference_data.l[2] - data.l[2]) / 3 - 10)
     elif data.r[2] < 321:
-        return Result(steer=(data.r[2] - difference_data["r"][2]) / 3 + 10)
+        return Result(steer=(data.r[2] - difference_data.r[2]) / 3 + 10)
 
 
 def curve(
-        data: Data, difference_data
+        data: Data, difference_data: Difference
 ) -> Result:
     if data.v[3] < 120:
         if data.v[2] > data.v[3] > data.v[4]:
             return Result(
                 situation="곡선 좌회전",
-                steer=(data.r[2] - difference_data["r"][2]) / 3 - 10,
+                steer=(data.r[2] - difference_data.r[2]) / 3 - 10,
                 velocity=config.base_velocity - 15
             )
         elif data.v[2] < data.v[3] < data.v[4]:
             return Result(
                 situation="곡선 우회전",
-                steer=(difference_data["l"][2] - data.l[2]) / 3 + 10,
+                steer=(difference_data.l[2] - data.l[2]) / 3 + 10,
                 velocity=config.base_velocity - 15
             )
         else:
@@ -185,7 +186,6 @@ def lidar_scan(
         return Result()
 
 
-# TODO: Use on Real Situation
 def manual_drive() -> Result:
     w = ["W", "w", "8", "up"]
     s = ["S", "s", "2", "down"]
@@ -247,13 +247,11 @@ def manual_drive() -> Result:
         return Result()
 
 
-# TODO: Use on Real Situation
 def esc_to_halt():
     if keyboard.is_pressed("esc"):
         halt.halt()
 
 
-# TODO: Use on Real Situation
 def control_base_velocity():
     if util.detect_keys(["+", "="]):
         config.base_velocity += 1
