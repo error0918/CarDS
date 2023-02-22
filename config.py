@@ -17,9 +17,9 @@ class Cars(Enum):
     B422 = enum.auto()
 
 
-left_steer = -85
-right_steer = 85
-base_velocity = 80
+left_steer = -80
+right_steer = 80
+base_velocity = 180
 
 difference: Dict[Cars, Difference] = {
     Cars.A8A0: Difference(
@@ -28,8 +28,8 @@ difference: Dict[Cars, Difference] = {
         steer=-3
     ),
     Cars.B422: Difference(
-        l=[97, 180, 264],
-        r=[88, 185, 283],
-        steer=11
+        l=[113, 204, 295],
+        r=[78, 169, 259],
+        steer=8
     )
 }

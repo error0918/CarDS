@@ -3,7 +3,7 @@ from enum import Enum
 from data.data import *
 from data.difference import *
 from data.result import *
-from internal import halt
+# from internal import halt
 from internal import util
 from typing import List
 import config
@@ -68,9 +68,9 @@ def steer(
 ) -> Result:
     if data.l[2] < 320 and data.r[2] < 321:
         if data.l[2] / difference_data.l[2] < data.r[2] / difference_data.r[2]:
-            return Result(steer=(difference_data.l[2] - data.l[2]) / 3 + 20)
+            return Result(steer=(difference_data.l[2] - data.l[2]) / 3)
         else:
-            return Result(steer=(data.r[2] - difference_data.r[2]) / 3 + 20)
+            return Result(steer=(data.r[2] - difference_data.r[2]) / 3)
     elif data.l[2] < 320:
         return Result(steer=(difference_data.l[2] - data.l[2]) / 3 - 10)
     elif data.r[2] < 321:
@@ -80,14 +80,14 @@ def steer(
 def curve(
         data: Data, difference_data: Difference
 ) -> Result:
-    if data.v[3] < 120:
-        if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] == 0 and data.v[4] <= 30):
+    if data.v[3] < 100:
+        if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] == 0 and data.v[4] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 좌회전",
                 steer=(data.r[2] - difference_data.r[2]) / 2.6 - 5,
                 velocity=config.base_velocity - 15
             )
-        elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] == 0 and data.v[2] <= 30):
+        elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] == 0 and data.v[2] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 우회전",
                 steer=(difference_data.l[2] - data.l[2]) / 2.6 + 5,
@@ -103,9 +103,13 @@ def left_right_angle(
         data: Data
 ) -> Result:
     situation = "직각 자회전"
+    """
     if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
-        return Result(situation=situation, steer=config.right_steer)
+        return Result(situation=situation, steer=config.left_steer)
+    """
+    if data.v[5] <= data.v[4] <= data.v[3] < 170 and -15 < (data.v[1] + data.v[3]) / 2 - data.v[2] < 15:
+        return Result(situation=situation, steer=config.left_steer)
     else:
         return Result()
 
@@ -114,8 +118,12 @@ def right_right_angle(
         data: Data
 ) -> Result:
     situation = "직각 우회전"
+    """
     if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
+        return Result(situation=situation, steer=config.right_steer)
+    """
+    if data.v[1] <= data.v[2] <= data.v[3] < 170 and -15 < (data.v[5] + data.v[3]) / 2 - data.v[4] < 15:
         return Result(situation=situation, steer=config.right_steer)
     else:
         return Result()
@@ -127,7 +135,7 @@ def four_lane(
     situation = "사차선"
     if data.l[1] + data.l[2] == 640 and \
             data.r[1] + data.r[2] == 642 and \
-            data.v[3] < 120:
+            data.v[3] < 100:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -142,7 +150,7 @@ def left_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅓ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 100:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -155,7 +163,7 @@ def right_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅏ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 100:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Right:
@@ -164,7 +172,6 @@ def right_three_lane(
         return Result()
 
 
-# TODO
 def t_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
@@ -181,16 +188,16 @@ def t_three_lane(
 
 
 def lidar_scan(
-        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 380
+        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 220
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0, velocity=None)
         elif direction == Direction.Left:
-            return Result(situation=situation, steer=config.left_steer, velocity=None)
+            return Result(situation=situation, steer=config.left_steer - 15, velocity=None)
         elif direction == Direction.Right:
-            return Result(situation=situation, steer=config.right_steer, velocity=None)
+            return Result(situation=situation, steer=config.right_steer + 15, velocity=None)
         else:
             return Result(situation=situation, steer=0, velocity=0)
     else:
@@ -199,7 +206,7 @@ def lidar_scan(
 
 # Warning: Experimental Feature
 def back_car(
-        data: Data, scan_v_distance: int = 40, scan_lidar_distance: int = 40
+        data: Data, scan_v_distance: int = 60, scan_lidar_distance: int = 160
 ) -> Result:
     if 0 < data.front_lidar < scan_lidar_distance:
         return Result(
@@ -225,10 +232,8 @@ def manual_drive() -> Result:
     wd = ["9", "page up"]
     sa = ["1", "end"]
     sd = ["3", "page down"]
-    shift = ["shift", "*"]
-    control = ["control", "/"]
     stop = ["5", "clear"]
-    if util.detect_keys(w + s + a + d + wa + wd + sa + sd + shift + control + stop):
+    if util.detect_keys(w + s + a + d + wa + wd + sa + sd + stop):
         situation = "수동주행 "
         manual_steer = 0
         manual_velocity = 0
@@ -280,7 +285,7 @@ class non_op:
                 "\n" +
                 "System ended by pressing ESC"
             )
-            halt.halt()
+            # halt.halt()
             sys.exit(0)
 
     @staticmethod

@@ -38,7 +38,7 @@ class TestPlanning(BasePlanning):
         elif util.detect_keys(["down", "/", "2"]):
             self.velocity -= 1
 
-        module.esc_to_halt()
+        module.non_op.esc_to_halt()
 
         sys.stdout.write(
             "CarDS Test\n" +

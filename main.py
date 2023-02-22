@@ -48,7 +48,7 @@ class Planning(BasePlanning):
                 module.default(data=data, difference_data=difference_data),
                 # module.four_lane(data=data, direction=module.Direction.Straight),
                 module.left_three_lane(data=data, direction=module.Direction.Straight),
-                module.right_three_lane(data=data, direction=module.Direction.Straight),
+                module.right_three_lane(data=data, direction=module.Direction.Right),
                 module.t_three_lane(data=data, direction=module.Direction.Left),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
                 module.back_car(data=data),  # Warning: Experimental Feature
@@ -77,7 +77,7 @@ class Planning(BasePlanning):
             % (v[0], v[1], v[2], v[3], v[4], v[5])
         )
 
-        return difference_data.steer + util.not_none(result.steer, self.last_steer), \
+        return difference_data.steer + util.not_none(result.steer, difference_data.steer), \
             module.non_op.control_current_velocity(util.not_none(result.velocity, config.base_velocity))
 
 

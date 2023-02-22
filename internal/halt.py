@@ -21,3 +21,6 @@ def halt():
             print('종료 실패')
     except:
         print('종료 실패')
+
+
+halt()
