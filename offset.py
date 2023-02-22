@@ -1,9 +1,9 @@
 from internal import util
+from internal import module
 from jajucha.planning import BasePlanning
 from jajucha.graphics import Graphics
 import config
 import sys
-import keyboard
 
 """
 CarDS - offset.py
@@ -14,6 +14,7 @@ Copyright 2023. jtaeyeon05 all rights reserved
 # Model
 class TestPlanning(BasePlanning):
     steer = 0
+    velocity = config.base_velocity
 
     def __init__(self, graphics_):
         super().__init__(graphics_)
@@ -26,18 +27,23 @@ class TestPlanning(BasePlanning):
             front_lidar,
             rear_lidar
     ):
-        velocity = config.base_velocity
         v, l, r = self.gridFront(front_image, cols=7, rows=3)
 
-        if keyboard.is_pressed("+"):
+        if util.detect_keys(["right", "+", "=", "6"]):
             self.steer += 1
-        elif keyboard.is_pressed("-"):
+        elif util.detect_keys(["left", "-", "_", "4"]):
             self.steer -= 1
+        elif util.detect_keys(["up", "*", "8"]):
+            self.velocity += 1
+        elif util.detect_keys(["down", "/", "2"]):
+            self.velocity -= 1
+
+        module.esc_to_halt()
 
         sys.stdout.write(
             "CarDS Test\n" +
             "steer = %d\n" % self.steer +
-            "velocity = %d\n" % velocity +
+            "velocity = %d\n" % self.velocity +
             "l[0] = %d l[1] = %d l[2] = %d | r[0] = %d r[1] = %d r[2] = %d\n"
             % (l[0], l[1], l[2], r[0], r[1], r[2]) +
             "v[0] = %d v[1] = %d v[2] = %d v[3] = %d v[4] = %d v[5] = %d\n"
@@ -45,7 +51,7 @@ class TestPlanning(BasePlanning):
             "\n"
         )
 
-        return self.steer, velocity
+        return self.steer, self.velocity
 
 
 # Run

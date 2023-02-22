@@ -197,11 +197,22 @@ def lidar_scan(
         return Result()
 
 
-# TODO: Make
 # Warning: Experimental Feature
 def back_car(
-        data: Data, scan_v_distance: int = 380, scan_lidar_distance: int = 380
+        data: Data, scan_v_distance: int = 40, scan_lidar_distance: int = 40
 ) -> Result:
+    if 0 < data.front_lidar < scan_lidar_distance:
+        return Result(
+            situation="라이다 초근접 인식 후진",
+            steer=0,
+            velocity=-config.base_velocity / 2
+        )
+    elif data.v[2] < scan_v_distance and data.v[3] < scan_v_distance and data.v[4] < scan_v_distance:
+        return Result(
+            situation="V 초근접 인식 후진",
+            steer=0,
+            velocity=-config.base_velocity / 2
+        )
     return Result()
 
 
@@ -262,6 +273,11 @@ def manual_drive() -> Result:
 
 def esc_to_halt():
     if keyboard.is_pressed("esc"):
+        sys.stdout.write(
+            "\n" +
+            "\n" +
+            "System ended by pressing ESC"
+        )
         halt.halt()
         sys.exit(0)
 

@@ -51,6 +51,7 @@ class Planning(BasePlanning):
                 module.right_three_lane(data=data, direction=module.Direction.Straight),
                 module.t_three_lane(data=data, direction=module.Direction.Left),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
+                module.back_car(data=data),  # Warning: Experimental Feature
                 module.manual_drive()
             ]
         )
