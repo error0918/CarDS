@@ -50,6 +50,7 @@ class Planning(BasePlanning):
                 module.left_three_lane(data=data, direction=module.Direction.Straight),
                 module.right_three_lane(data=data, direction=module.Direction.Right),
                 module.t_three_lane(data=data, direction=module.Direction.Left),
+                # module.right_dot_line(data=data, r20=self.gridFront(front_image, cols=7, rows=20)[2], direction=module.Direction.Right),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
                 module.back_car(data=data),  # Warning: Experimental Feature
                 module.manual_drive()
@@ -62,7 +63,6 @@ class Planning(BasePlanning):
             self.last_steer = result.steer
 
         sys.stdout.write("\n\n")
-
         sys.stdout.write(
             "CarDS\n" +
             "situation = %s \n" % util.not_none(result.situation, "None") +
@@ -86,3 +86,7 @@ util.run_message("main")
 graphics = Graphics(Planning)
 graphics.root.mainloop()
 graphics.exit()
+
+
+def detect_inline(r):
+    return r != 341

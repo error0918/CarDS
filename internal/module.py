@@ -45,7 +45,7 @@ def default(
             steer(data=data, difference_data=difference_data),
             curve(data=data, difference_data=difference_data),
             left_right_angle(data=data),
-            right_right_angle(data=data)
+            # right_right_angle(data=data)
         ]
     )
 
@@ -80,18 +80,18 @@ def steer(
 def curve(
         data: Data, difference_data: Difference
 ) -> Result:
-    if data.v[3] < 100:
-        if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] == 0 and data.v[4] <= 55 and data.v[3] <= 30):
+    if data.v[3] < 130:
+        if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] and data.v[4] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 좌회전",
-                steer=(data.r[2] - difference_data.r[2]) / 2.6 - 5,
-                velocity=config.base_velocity - 15
+                steer=(data.r[2] - difference_data.r[2]) / 2.2 - 10,
+                velocity=config.base_velocity
             )
-        elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] == 0 and data.v[2] <= 55 and data.v[3] <= 30):
+        elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] and data.v[2] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 우회전",
-                steer=(difference_data.l[2] - data.l[2]) / 2.6 + 5,
-                velocity=config.base_velocity - 15
+                steer=(difference_data.l[2] - data.l[2]) / 2.2 + 10,
+                velocity=config.base_velocity
             )
         else:
             return Result(situation="곡선 상태 유지", steer=data.last_steer, velocity=config.base_velocity - 15)
@@ -108,7 +108,7 @@ def left_right_angle(
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
         return Result(situation=situation, steer=config.left_steer)
     """
-    if data.v[5] <= data.v[4] <= data.v[3] < 170 and -15 < (data.v[1] + data.v[3]) / 2 - data.v[2] < 15:
+    if data.v[5] <= data.v[4] <= data.v[3] < 170 and -15 < (data.v[6] + data.v[4]) / 2 - data.v[5] < 15:
         return Result(situation=situation, steer=config.left_steer)
     else:
         return Result()
@@ -123,7 +123,7 @@ def right_right_angle(
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
         return Result(situation=situation, steer=config.right_steer)
     """
-    if data.v[1] <= data.v[2] <= data.v[3] < 170 and -15 < (data.v[5] + data.v[3]) / 2 - data.v[4] < 15:
+    if data.v[1] <= data.v[2] <= data.v[3] < 170 and -15 < (data.v[0] + data.v[2]) / 2 - data.v[1] < 15:
         return Result(situation=situation, steer=config.right_steer)
     else:
         return Result()
@@ -135,7 +135,7 @@ def four_lane(
     situation = "사차선"
     if data.l[1] + data.l[2] == 640 and \
             data.r[1] + data.r[2] == 642 and \
-            data.v[3] < 100:
+            data.v[3] < 110:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -150,7 +150,7 @@ def left_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅓ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 100:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 110:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -163,7 +163,7 @@ def right_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅏ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 100:
+    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 110:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Right:
@@ -177,7 +177,7 @@ def t_three_lane(
 ) -> Result:
     situation = "T자 삼차선"
     if data.l[1] + data.r[2] == 641 and \
-            data.v[2] < 175 and data.v[3] < 175 and data.v[4] < 175:
+            50 <= data.v[2] < 175 and 50 <= data.v[3] < 175 and 50 <= data.v[4] < 175:
         if direction == Direction.Stop:
             return Result(situation=situation, velocity=0)
         elif direction == Direction.Left:
@@ -188,7 +188,7 @@ def t_three_lane(
 
 
 def lidar_scan(
-        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 220
+        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 230
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
@@ -200,6 +200,15 @@ def lidar_scan(
             return Result(situation=situation, steer=config.right_steer + 15, velocity=None)
         else:
             return Result(situation=situation, steer=0, velocity=0)
+    else:
+        return Result()
+
+
+def right_dot_line(
+        data: Data, r20: List[int], direction: Direction = Direction.Straight
+) -> Result:
+    if non_op.detect_dot_line(r20=r20) and data.l[0] < 320:
+        return Result(situation="ㅁㄴㅇㄹ", steer=config.right_steer / 1.3)
     else:
         return Result()
 
@@ -306,3 +315,15 @@ class non_op:
             config.base_velocity += 1
         elif util.detect_keys(["-", "_"]):
             config.base_velocity -= 1
+
+    @staticmethod
+    def detect_dot_line(r20) -> bool:
+        r_r = [False, False]
+        rr = [r20[:15], r20[16:]]
+        for r00 in range(2):
+            r_count = 0
+            for r in rr[r00]:
+                if r == 321:
+                    r_count += 1
+            r_r[r00] = 1 <= r_count <= len(rr[r00]) / 2
+        return r_r[0] and r_r[1]
