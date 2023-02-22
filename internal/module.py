@@ -1,3 +1,4 @@
+import sys
 from enum import Enum
 from data.data import *
 from data.difference import *
@@ -52,11 +53,12 @@ def default(
 def velocity(
         data: Data
 ) -> Result:
+    situation = "직진"
     if data.v[0] < data.v[1] < data.v[2] < data.v[3] \
             and data.v[3] > data.v[4] > data.v[5] > data.v[6] \
             and -10 < 2 * data.v[5] - (data.v[4] + data.v[6]) < 10 \
             and -10 < 2 * data.v[1] - (data.v[0] + data.v[2]) < 10:
-        return Result(situation="직진", velocity=config.base_velocity + 20)
+        return Result(situation=situation, velocity=config.base_velocity + 20)
     else:
         return Result(velocity=config.base_velocity)
 
@@ -79,16 +81,16 @@ def curve(
         data: Data, difference_data: Difference
 ) -> Result:
     if data.v[3] < 120:
-        if data.v[2] > data.v[3] > data.v[4]:
+        if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] == 0 and data.v[4] <= 30):
             return Result(
                 situation="곡선 좌회전",
-                steer=(data.r[2] - difference_data.r[2]) / 3 - 10,
+                steer=(data.r[2] - difference_data.r[2]) / 2.6 - 5,
                 velocity=config.base_velocity - 15
             )
-        elif data.v[2] < data.v[3] < data.v[4]:
+        elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] == 0 and data.v[2] <= 30):
             return Result(
                 situation="곡선 우회전",
-                steer=(difference_data.l[2] - data.l[2]) / 3 + 10,
+                steer=(difference_data.l[2] - data.l[2]) / 2.6 + 5,
                 velocity=config.base_velocity - 15
             )
         else:
@@ -100,9 +102,9 @@ def curve(
 def left_right_angle(
         data: Data
 ) -> Result:
+    situation = "직각 자회전"
     if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
-        situation = "직각 자회전"
         return Result(situation=situation, steer=config.right_steer)
     else:
         return Result()
@@ -111,9 +113,9 @@ def left_right_angle(
 def right_right_angle(
         data: Data
 ) -> Result:
+    situation = "직각 우회전"
     if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
             and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
-        situation = "직각 우회전"
         return Result(situation=situation, steer=config.right_steer)
     else:
         return Result()
@@ -122,10 +124,10 @@ def right_right_angle(
 def four_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
+    situation = "사차선"
     if data.l[1] + data.l[2] == 640 and \
             data.r[1] + data.r[2] == 642 and \
             data.v[3] < 120:
-        situation = "사차선"
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -139,8 +141,8 @@ def four_lane(
 def left_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
+    situation = "ㅓ자 삼차선"
     if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
-        situation = "ㅓ자 삼차선"
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -152,8 +154,8 @@ def left_three_lane(
 def right_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
+    situation = "ㅏ자 삼차선"
     if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 120:
-        situation = "ㅏ자 삼차선"
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Right:
@@ -166,11 +168,20 @@ def right_three_lane(
 def t_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
-    return Result(situation=None, steer=None, velocity=None)
+    situation = "T자 삼차선"
+    if data.l[1] + data.r[2] == 641 and \
+            data.v[2] < 175 and data.v[3] < 175 and data.v[4] < 175:
+        if direction == Direction.Stop:
+            return Result(situation=situation, velocity=0)
+        elif direction == Direction.Left:
+            return Result(situation=situation, steer=config.left_steer, velocity=config.base_velocity - 5)
+        elif direction == Direction.Right:
+            return Result(situation=situation, steer=config.right_steer, velocity=config.base_velocity - 5)
+        return Result()
 
 
 def lidar_scan(
-        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 400
+        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 380
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
@@ -184,6 +195,14 @@ def lidar_scan(
             return Result(situation=situation, steer=0, velocity=0)
     else:
         return Result()
+
+
+# TODO: Make
+# Warning: Experimental Feature
+def back_car(
+        data: Data, scan_v_distance: int = 380, scan_lidar_distance: int = 380
+) -> Result:
+    return Result()
 
 
 def manual_drive() -> Result:
@@ -232,12 +251,6 @@ def manual_drive() -> Result:
             situation += "↘"
             manual_steer += config.right_steer
             manual_velocity = -config.base_velocity + 15
-        if util.detect_keys(shift):
-            situation += "⇈"
-            manual_velocity = util.change_absolute_value(manual_velocity, 25)
-        elif util.detect_keys(control):
-            situation += "⇊"
-            manual_velocity = util.change_absolute_value(manual_velocity, -25)
         elif util.detect_keys(stop):
             situation += "▣"
             manual_steer = 0
@@ -250,6 +263,19 @@ def manual_drive() -> Result:
 def esc_to_halt():
     if keyboard.is_pressed("esc"):
         halt.halt()
+        sys.exit(0)
+
+
+def control_current_velocity(
+        current_velocity: int
+) -> int:  # Return New Current Velocity
+    shift = ["shift", "*"]
+    control = ["control", "/"]
+    if util.detect_keys(shift):
+        return util.change_absolute_value(current_velocity, 25)
+    elif util.detect_keys(control):
+        return util.change_absolute_value(current_velocity, -25)
+    return current_velocity
 
 
 def control_base_velocity():

@@ -19,7 +19,7 @@ def run_message(name: str):
 
 
 def detect_keys(keys: List[str]) -> bool:
-    return list(map(keyboard.is_pressed, keys)).index(True) != -1
+    return True in map(keyboard.is_pressed, keys)
 
 
 def change_absolute_value(value: int, delta: int) -> int:

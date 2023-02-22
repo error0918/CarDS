@@ -13,6 +13,8 @@ Copyright 2023. jtaeyeon05 all rights reserved
 
 # Model
 class TestPlanning(BasePlanning):
+    steer = 0
+
     def __init__(self, graphics_):
         super().__init__(graphics_)
 
@@ -24,18 +26,17 @@ class TestPlanning(BasePlanning):
             front_lidar,
             rear_lidar
     ):
-        steer = 13
         velocity = config.base_velocity
         v, l, r = self.gridFront(front_image, cols=7, rows=3)
 
         if keyboard.is_pressed("+"):
-            steer += 1
+            self.steer += 1
         elif keyboard.is_pressed("-"):
-            steer -= 1
+            self.steer -= 1
 
         sys.stdout.write(
             "CarDS Test\n" +
-            "steer = %d\n" % steer +
+            "steer = %d\n" % self.steer +
             "velocity = %d\n" % velocity +
             "l[0] = %d l[1] = %d l[2] = %d | r[0] = %d r[1] = %d r[2] = %d\n"
             % (l[0], l[1], l[2], r[0], r[1], r[2]) +
@@ -44,7 +45,7 @@ class TestPlanning(BasePlanning):
             "\n"
         )
 
-        return steer, velocity
+        return self.steer, velocity
 
 
 # Run

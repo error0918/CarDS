@@ -57,7 +57,10 @@ class Planning(BasePlanning):
         module.esc_to_halt()
         module.control_base_velocity()
 
-        self.last_steer = result.steer
+        if result.steer is not None:
+            self.last_steer = result.steer
+
+        sys.stdout.write("\n\n")
 
         sys.stdout.write(
             "CarDS\n" +
@@ -70,13 +73,11 @@ class Planning(BasePlanning):
             "l[0] = %d l[1] = %d l[2] = %d | r[0] = %d r[1] = %d r[2] = %d\n"
             % (l[0], l[1], l[2], r[0], r[1], r[2]) +
             "v[0] = %d v[1] = %d v[2] = %d v[3] = %d v[4] = %d v[5] = %d\n"
-            % (v[0], v[1], v[2], v[3], v[4], v[5]) +
-            "\n" +
-            "\n"
+            % (v[0], v[1], v[2], v[3], v[4], v[5])
         )
 
         return difference_data.steer + util.not_none(result.steer, self.last_steer), \
-            util.not_none(result.velocity, config.base_velocity)
+            module.control_current_velocity(util.not_none(result.velocity, config.base_velocity))
 
 
 # Run
