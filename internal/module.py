@@ -271,31 +271,33 @@ def manual_drive() -> Result:
         return Result()
 
 
-def esc_to_halt():
-    if keyboard.is_pressed("esc"):
-        sys.stdout.write(
-            "\n" +
-            "\n" +
-            "System ended by pressing ESC"
-        )
-        halt.halt()
-        sys.exit(0)
+class non_op:
+    @staticmethod
+    def esc_to_halt():
+        if keyboard.is_pressed("esc"):
+            sys.stdout.write(
+                "\n" +
+                "\n" +
+                "System ended by pressing ESC"
+            )
+            halt.halt()
+            sys.exit(0)
 
+    @staticmethod
+    def control_current_velocity(
+            current_velocity: int
+    ) -> int:  # Return New Current Velocity
+        shift = ["shift", "*"]
+        control = ["control", "/"]
+        if util.detect_keys(shift):
+            return util.change_absolute_value(current_velocity, 25)
+        elif util.detect_keys(control):
+            return util.change_absolute_value(current_velocity, -25)
+        return current_velocity
 
-def control_current_velocity(
-        current_velocity: int
-) -> int:  # Return New Current Velocity
-    shift = ["shift", "*"]
-    control = ["control", "/"]
-    if util.detect_keys(shift):
-        return util.change_absolute_value(current_velocity, 25)
-    elif util.detect_keys(control):
-        return util.change_absolute_value(current_velocity, -25)
-    return current_velocity
-
-
-def control_base_velocity():
-    if util.detect_keys(["+", "="]):
-        config.base_velocity += 1
-    elif util.detect_keys(["-", "_"]):
-        config.base_velocity -= 1
+    @staticmethod
+    def control_base_velocity():
+        if util.detect_keys(["+", "="]):
+            config.base_velocity += 1
+        elif util.detect_keys(["-", "_"]):
+            config.base_velocity -= 1

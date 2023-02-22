@@ -55,8 +55,8 @@ class Planning(BasePlanning):
                 module.manual_drive()
             ]
         )
-        module.esc_to_halt()
-        module.control_base_velocity()
+        module.non_op.esc_to_halt()
+        module.non_op.control_base_velocity()
 
         if result.steer is not None:
             self.last_steer = result.steer
@@ -78,7 +78,7 @@ class Planning(BasePlanning):
         )
 
         return difference_data.steer + util.not_none(result.steer, self.last_steer), \
-            module.control_current_velocity(util.not_none(result.velocity, config.base_velocity))
+            module.non_op.control_current_velocity(util.not_none(result.velocity, config.base_velocity))
 
 
 # Run
