@@ -183,6 +183,34 @@ def t_three_lane(
         return Result()
 
 
+def exit_left_dot_line(
+        data: Data, difference_data: Difference
+) -> Result:
+    situation = "좌측 점선 인식 및 탈출"
+    if data.v[6] < data.v[5] < data.v[4] < data.v[3] < data.v[2] > data.v[1] > data.v[6] and \
+            data.v[3] < difference_data.base_v + 30:
+        module.hold_frame = True, 5
+        return Result(
+            situation=situation,
+            steer=config.left_steer
+        )
+    return Result()
+
+
+def exit_right_dot_line(
+        data: Data, difference_data: Difference
+) -> Result:
+    situation = "우측 점선 인식 및 탈출"
+    if data.v[0] < data.v[1] < data.v[2] < data.v[3] < data.v[4] > data.v[5] > data.v[6] and \
+            data.v[3] < difference_data.base_v + 30:
+        module.hold_frame = True, 5
+        return Result(
+            situation=situation,
+            steer=config.right_steer
+        )
+    return Result()
+
+
 def lidar_scan(
         data: Data, direction: Direction = Direction.Stop, scan_distance: int = 230
 ) -> Result:

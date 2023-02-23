@@ -49,6 +49,8 @@ class Planning(BasePlanning):
                 module.left_three_lane(data=data, direction=module.Direction.Straight),
                 # module.right_three_lane(data=data, direction=module.Direction.Right),
                 module.t_three_lane(data=data, direction=module.Direction.Left),
+                # module.exit_left_dot_line(data=data, difference_data=difference_data),
+                module.exit_right_dot_line(data=data, difference_data=difference_data),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
                 module.back_car(data=data),  # Warning: Experimental Feature
                 module.hold_result(),
