@@ -188,8 +188,8 @@ def exit_left_dot_line(
 ) -> Result:
     situation = "좌측 점선 인식 및 탈출"
     if data.v[6] < data.v[5] < data.v[4] < data.v[3] < data.v[2] > data.v[1] > data.v[6] and \
-            data.v[3] < difference_data.base_v + 30:
-        module.hold_frame = True, 5
+            data.v[3] < difference_data.base_v + 40:
+        module.hold_frame = True, 10
         return Result(
             situation=situation,
             steer=config.left_steer
@@ -202,7 +202,7 @@ def exit_right_dot_line(
 ) -> Result:
     situation = "우측 점선 인식 및 탈출"
     if data.v[0] < data.v[1] < data.v[2] < data.v[3] < data.v[4] > data.v[5] > data.v[6] and \
-            data.v[3] < difference_data.base_v + 30:
+            data.v[3] < difference_data.base_v + 40:
         module.hold_frame = True, 5
         return Result(
             situation=situation,
@@ -216,7 +216,7 @@ def lidar_scan(
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
-        module.hold_frame = True, 5
+        module.hold_frame = True, 10
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0, velocity=None)
         elif direction == Direction.Left:
