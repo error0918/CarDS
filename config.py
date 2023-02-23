@@ -23,13 +23,15 @@ base_velocity = 180
 
 difference: Dict[Cars, Difference] = {
     Cars.A8A0: Difference(
-        l=[79, 171, 261],
-        r=[72, 155, 237],
-        steer=-3
+        l=[76, 170, 258],
+        r=[69, 154, 237],
+        base_v=130,
+        steer=-13
     ),
     Cars.B422: Difference(
         l=[113, 204, 295],
         r=[78, 169, 259],
+        base_v=130,
         steer=8
     )
 }

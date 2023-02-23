@@ -5,7 +5,9 @@ from data.difference import *
 from data.result import *
 # from internal import halt
 from internal import util
+from internal import module
 from typing import List
+from typing import Tuple
 import config
 import keyboard
 
@@ -13,6 +15,9 @@ import keyboard
 CarDS - internal.module.py
 Copyright 2023. jtaeyeon05 all rights reserved
 """
+
+hold_frame: Tuple[bool, int] = (False, 0)
+last_result: Result = Result()
 
 
 class Direction(Enum):
@@ -57,7 +62,8 @@ def velocity(
     if data.v[0] < data.v[1] < data.v[2] < data.v[3] \
             and data.v[3] > data.v[4] > data.v[5] > data.v[6] \
             and -10 < 2 * data.v[5] - (data.v[4] + data.v[6]) < 10 \
-            and -10 < 2 * data.v[1] - (data.v[0] + data.v[2]) < 10:
+            and -10 < 2 * data.v[1] - (data.v[0] + data.v[2]) < 10 \
+            and data.v[3] > 170:
         return Result(situation=situation, velocity=config.base_velocity + 20)
     else:
         return Result(velocity=config.base_velocity)
@@ -80,7 +86,7 @@ def steer(
 def curve(
         data: Data, difference_data: Difference
 ) -> Result:
-    if data.v[3] < 130:
+    if data.v[3] < difference_data.base_v:
         if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] and data.v[4] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 좌회전",
@@ -102,12 +108,7 @@ def curve(
 def left_right_angle(
         data: Data
 ) -> Result:
-    situation = "직각 자회전"
-    """
-    if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
-            and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
-        return Result(situation=situation, steer=config.left_steer)
-    """
+    situation = "직각 좌회전"
     if data.v[5] <= data.v[4] <= data.v[3] < 170 and -15 < (data.v[6] + data.v[4]) / 2 - data.v[5] < 15:
         return Result(situation=situation, steer=config.left_steer)
     else:
@@ -118,11 +119,6 @@ def right_right_angle(
         data: Data
 ) -> Result:
     situation = "직각 우회전"
-    """
-    if -15 < (data.v[6] + data.v[3]) - (data.v[4] + data.v[5]) < 15 \
-            and data.v[5] < 160 and data.v[0] > 64 and data.v[2] < data.v[6]:
-        return Result(situation=situation, steer=config.right_steer)
-    """
     if data.v[1] <= data.v[2] <= data.v[3] < 170 and -15 < (data.v[0] + data.v[2]) / 2 - data.v[1] < 15:
         return Result(situation=situation, steer=config.right_steer)
     else:
@@ -150,7 +146,7 @@ def left_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅓ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 110:
+    if -15 < (data.v[4] + data.v[6]) / 2 - data.v[5] < 15 and data.l[1] + data.l[2] == 640 and data.v[3] > 200:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Left:
@@ -163,7 +159,7 @@ def right_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "ㅏ자 삼차선"
-    if data.l[1] + data.l[2] == 640 and data.r[1] + data.r[2] == 642 and data.v[3] < 110:
+    if -10 < (data.v[2] + data.v[0]) / 2 - data.v[1] < 10 and data.r[1] + data.r[2] == 642 and data.v[3] > 200:
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0)
         elif direction == Direction.Right:
@@ -176,7 +172,7 @@ def t_three_lane(
         data: Data, direction: Direction = Direction.Stop
 ) -> Result:
     situation = "T자 삼차선"
-    if data.l[1] + data.r[2] == 641 and \
+    if data.l[1] + data.r[1] == 641 and \
             50 <= data.v[2] < 175 and 50 <= data.v[3] < 175 and 50 <= data.v[4] < 175:
         if direction == Direction.Stop:
             return Result(situation=situation, velocity=0)
@@ -192,6 +188,7 @@ def lidar_scan(
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
+        module.hold_frame = True, 5
         if direction == Direction.Straight:
             return Result(situation=situation, steer=0, velocity=None)
         elif direction == Direction.Left:
@@ -204,31 +201,39 @@ def lidar_scan(
         return Result()
 
 
-def right_dot_line(
-        data: Data, r20: List[int], direction: Direction = Direction.Straight
-) -> Result:
-    if non_op.detect_dot_line(r20=r20) and data.l[0] < 320:
-        return Result(situation="ㅁㄴㅇㄹ", steer=config.right_steer / 1.3)
-    else:
-        return Result()
-
-
 # Warning: Experimental Feature
 def back_car(
         data: Data, scan_v_distance: int = 60, scan_lidar_distance: int = 160
 ) -> Result:
     if 0 < data.front_lidar < scan_lidar_distance:
+        module.hold_frame = True, 5
         return Result(
             situation="라이다 초근접 인식 후진",
-            steer=0,
+            steer=-non_op.get_last_result().steer / 2,
             velocity=-config.base_velocity / 2
         )
-    elif data.v[2] < scan_v_distance and data.v[3] < scan_v_distance and data.v[4] < scan_v_distance:
+    elif (data.v[2] < scan_v_distance or data.v[2] == 255) and \
+            (data.v[3] < scan_v_distance or data.v[3] == 255) and \
+            (data.v[4] < scan_v_distance or data.v[4] == 255):
+        module.hold_frame = True, 5
         return Result(
             situation="V 초근접 인식 후진",
-            steer=0,
+            steer=-util.not_none(non_op.get_last_result().steer, 0) / 2,
             velocity=-config.base_velocity / 2
         )
+    return Result()
+
+
+def hold_result() -> Result:
+    if not module.hold_frame[0] and module.hold_frame[1] > 0:
+        module.hold_frame = False, module.hold_frame[1] - 1
+        return Result(
+            situation="프레임 유지 - " + util.not_none(module.last_result.situation, "").replace("프레임 유지 - ", ""),
+            steer=module.last_result.steer,
+            velocity=module.last_result.velocity
+        )
+    elif module.hold_frame[0]:
+        module.hold_frame = False, module.hold_frame[1]
     return Result()
 
 
@@ -246,6 +251,7 @@ def manual_drive() -> Result:
         situation = "수동주행 "
         manual_steer = 0
         manual_velocity = 0
+        module.hold_frame = False, 0
         if util.detect_keys(w):
             situation += "↑"
             manual_velocity = config.base_velocity
@@ -317,13 +323,9 @@ class non_op:
             config.base_velocity -= 1
 
     @staticmethod
-    def detect_dot_line(r20) -> bool:
-        r_r = [False, False]
-        rr = [r20[:15], r20[16:]]
-        for r00 in range(2):
-            r_count = 0
-            for r in rr[r00]:
-                if r == 321:
-                    r_count += 1
-            r_r[r00] = 1 <= r_count <= len(rr[r00]) / 2
-        return r_r[0] and r_r[1]
+    def save_result(result: Result):
+        module.last_result = result
+
+    @staticmethod
+    def get_last_result():
+        return last_result

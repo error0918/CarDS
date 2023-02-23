@@ -11,4 +11,5 @@ Copyright 2023. jtaeyeon05 all rights reserved
 class Difference:
     l: List[int]
     r: List[int]
+    base_v: int
     steer: int
