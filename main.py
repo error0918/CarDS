@@ -51,7 +51,7 @@ class Planning(BasePlanning):
                 module.t_three_lane(data=data, direction=module.Direction.Left),
                 # module.exit_left_dot_line(data=data, difference_data=difference_data),
                 module.exit_right_dot_line(data=data, difference_data=difference_data),
-                module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=400),
+                module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=350),
                 module.back_car(data=data),  # Warning: Experimental Feature
                 module.hold_result(),
                 module.manual_drive()
@@ -86,7 +86,3 @@ util.run_message("main")
 graphics = Graphics(Planning)
 graphics.root.mainloop()
 graphics.exit()
-
-
-def detect_inline(r):
-    return r != 341

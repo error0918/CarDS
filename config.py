@@ -31,7 +31,7 @@ difference: Dict[Cars, Difference] = {
     Cars.B422: Difference(
         l=[113, 204, 295],
         r=[78, 169, 259],
-        base_v=130,
+        base_v=110,
         steer=8
     )
 }

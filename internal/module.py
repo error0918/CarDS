@@ -90,13 +90,13 @@ def curve(
         if data.v[2] > data.v[3] > data.v[4] or (data.v[2] > data.v[3] and data.v[4] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 좌회전",
-                steer=(data.r[2] - difference_data.r[2]) / 2.2 - 10,
+                steer=(data.r[2] - difference_data.r[2]) / 2.3 - 10,
                 velocity=config.base_velocity
             )
         elif data.v[2] < data.v[3] < data.v[4] or (data.v[4] > data.v[3] and data.v[2] <= 55 and data.v[3] <= 30):
             return Result(
                 situation="곡선 우회전",
-                steer=(difference_data.l[2] - data.l[2]) / 2.2 + 10,
+                steer=(difference_data.l[2] - data.l[2]) / 2.3 + 10,
                 velocity=config.base_velocity
             )
         else:
@@ -212,7 +212,7 @@ def exit_right_dot_line(
 
 
 def lidar_scan(
-        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 230
+        data: Data, direction: Direction = Direction.Stop, scan_distance: int = 250
 ) -> Result:
     situation = "장애물 인식"
     if 0 < data.front_lidar < scan_distance:
