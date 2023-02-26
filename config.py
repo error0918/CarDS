@@ -1,5 +1,5 @@
 from enum import Enum
-from data.difference import *
+from data.difference import Difference
 from typing import Dict
 import enum
 
@@ -10,6 +10,7 @@ Copyright 2023. jtaeyeon05 all rights reserved
 
 
 is_canny_show = False
+is_esc_to_halt = False
 
 
 class Cars(Enum):

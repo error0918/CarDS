@@ -1,9 +1,9 @@
 import sys
 from enum import Enum
-from data.data import *
-from data.difference import *
-from data.result import *
-# from internal import halt
+from data.data import Data
+from data.difference import Difference
+from data.result import Result
+from internal import halt
 from internal import util
 from internal import module
 from typing import List
@@ -16,7 +16,7 @@ CarDS - internal.module.py
 Copyright 2023. jtaeyeon05 all rights reserved
 """
 
-hold_frame: Tuple[bool, int] = (False, 0)
+hold_frame: Tuple[bool, int] = (False, 0)  # 프레임 유지 정의, 남은 프레임 수
 last_result: Result = Result()
 
 
@@ -183,34 +183,6 @@ def t_three_lane(
         return Result()
 
 
-def exit_left_dot_line(
-        data: Data, difference_data: Difference
-) -> Result:
-    situation = "좌측 점선 인식 및 탈출"
-    if data.v[6] < data.v[5] < data.v[4] < data.v[3] < data.v[2] > data.v[1] > data.v[6] and \
-            data.v[3] < difference_data.base_v + 40:
-        module.hold_frame = True, 10
-        return Result(
-            situation=situation,
-            steer=config.left_steer
-        )
-    return Result()
-
-
-def exit_right_dot_line(
-        data: Data, difference_data: Difference
-) -> Result:
-    situation = "우측 점선 인식 및 탈출"
-    if data.v[0] < data.v[1] < data.v[2] < data.v[3] < data.v[4] > data.v[5] > data.v[6] and \
-            data.v[3] < difference_data.base_v + 40:
-        module.hold_frame = True, 5
-        return Result(
-            situation=situation,
-            steer=config.right_steer
-        )
-    return Result()
-
-
 def lidar_scan(
         data: Data, direction: Direction = Direction.Stop, scan_distance: int = 250
 ) -> Result:
@@ -227,6 +199,36 @@ def lidar_scan(
             return Result(situation=situation, steer=0, velocity=0)
     else:
         return Result()
+
+
+# Warning: Experimental Feature
+def exit_left_dot_line(
+        data: Data, difference_data: Difference
+) -> Result:
+    situation = "좌측 점선 인식 및 탈출"
+    if data.v[6] < data.v[5] < data.v[4] < data.v[3] < data.v[2] > data.v[1] > data.v[6] and \
+            data.v[3] < difference_data.base_v + 40:
+        module.hold_frame = True, 10
+        return Result(
+            situation=situation,
+            steer=config.left_steer
+        )
+    return Result()
+
+
+# Warning: Experimental Feature
+def exit_right_dot_line(
+        data: Data, difference_data: Difference
+) -> Result:
+    situation = "우측 점선 인식 및 탈출"
+    if data.v[0] < data.v[1] < data.v[2] < data.v[3] < data.v[4] > data.v[5] > data.v[6] and \
+            data.v[3] < difference_data.base_v + 40:
+        module.hold_frame = True, 5
+        return Result(
+            situation=situation,
+            steer=config.right_steer
+        )
+    return Result()
 
 
 # Warning: Experimental Feature
@@ -252,6 +254,7 @@ def back_car(
     return Result()
 
 
+# Warning: Experimental Feature
 def hold_result() -> Result:
     if not module.hold_frame[0] and module.hold_frame[1] > 0:
         module.hold_frame = False, module.hold_frame[1] - 1
@@ -265,6 +268,7 @@ def hold_result() -> Result:
     return Result()
 
 
+# Warning: Test Feature
 def manual_drive() -> Result:
     w = ["W", "w", "8", "up"]
     s = ["S", "s", "2", "down"]
@@ -321,14 +325,15 @@ def manual_drive() -> Result:
 
 class non_op:
     @staticmethod
-    def esc_to_halt():
+    def esc_to_pause():
         if keyboard.is_pressed("esc"):
             sys.stdout.write(
                 "\n" +
                 "\n" +
                 "System ended by pressing ESC"
             )
-            # halt.halt()
+            if config.is_esc_to_halt:
+                halt.halt()
             sys.exit(0)
 
     @staticmethod

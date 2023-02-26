@@ -1,6 +1,6 @@
 from config import Cars
-from data.data import *
-from data.result import *
+from data.data import Data
+from data.result import Result
 from internal import module
 from internal import util
 from jajucha.planning import BasePlanning
@@ -45,19 +45,20 @@ class Planning(BasePlanning):
         result: Result = module.operation(
             result_list=[
                 module.default(data=data, difference_data=difference_data),
-                # module.four_lane(data=data, direction=module.Direction.Straight),
+                module.four_lane(data=data, direction=module.Direction.Straight),
                 module.left_three_lane(data=data, direction=module.Direction.Straight),
-                # module.right_three_lane(data=data, direction=module.Direction.Right),
+                module.right_three_lane(data=data, direction=module.Direction.Straight),
                 module.t_three_lane(data=data, direction=module.Direction.Left),
-                # module.exit_left_dot_line(data=data, difference_data=difference_data),
+                module.exit_left_dot_line(data=data, difference_data=difference_data),
                 module.exit_right_dot_line(data=data, difference_data=difference_data),
                 module.lidar_scan(data=data, direction=module.Direction.Left, scan_distance=350),
-                module.back_car(data=data),  # Warning: Experimental Feature
+                module.back_car(data=data),
                 module.hold_result(),
                 module.manual_drive()
             ]
         )
-        module.non_op.esc_to_halt()
+
+        module.non_op.esc_to_pause()
         module.non_op.control_base_velocity()
 
         sys.stdout.write("\n\n")
