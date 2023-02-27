@@ -50,7 +50,7 @@ def default(
             steer(data=data, difference_data=difference_data),
             curve(data=data, difference_data=difference_data),
             left_right_angle(data=data),
-            # right_right_angle(data=data)
+            right_right_angle(data=data)
         ]
     )
 
@@ -100,7 +100,7 @@ def curve(
                 velocity=config.base_velocity
             )
         else:
-            return Result(situation="곡선 상태 유지", steer=data.last_steer, velocity=config.base_velocity - 15)
+            return Result(situation="곡선 상태 유지", steer=module.non_op.get_last_result().steer, velocity=config.base_velocity - 15)
     else:
         return Result()
 
@@ -324,6 +324,9 @@ def manual_drive() -> Result:
 
 
 class non_op:
+    def __init__(self):
+        pass
+
     @staticmethod
     def esc_to_pause():
         if keyboard.is_pressed("esc"):

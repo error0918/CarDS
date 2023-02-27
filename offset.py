@@ -12,7 +12,7 @@ Copyright 2023. jtaeyeon05 all rights reserved
 
 
 # Model
-class TestPlanning(BasePlanning):
+class OffsetPlanning(BasePlanning):
     steer = 0
     velocity = config.base_velocity
 
@@ -56,6 +56,6 @@ class TestPlanning(BasePlanning):
 
 # Run
 util.run_message("offset")
-graphics = Graphics(TestPlanning)
+graphics = Graphics(OffsetPlanning)
 graphics.root.mainloop()
 graphics.exit()

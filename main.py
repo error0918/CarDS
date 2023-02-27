@@ -22,8 +22,8 @@ class Planning(BasePlanning):
 
     def process(
             self,
-            second,  # 경과 시간 (안 씀)
-            front_image,  # 전면 이미지 (안 씀)
+            second,  # 경과 시간
+            front_image,  # 전면 이미지
             rear_image,  # 후면 이미지 (없음)
             front_lidar,  # 전면 라이다 센서
             rear_lidar  # 후면 라이다 센서 (없음)
@@ -37,7 +37,6 @@ class Planning(BasePlanning):
         data: Data = Data(
             second=second,
             front_lidar=front_lidar,
-            last_steer=module.non_op.get_last_result().steer,
             v=v, l=l, r=r
         )
 
