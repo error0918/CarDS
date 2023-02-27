@@ -2,6 +2,13 @@
     <img src="https://capsule-render.vercel.app/api?type=transparent&height=150&animation=fadeIn&fontColor=8c8cff&text=CarDS&fontSize=80&fontAlignY=50&desc=2023년%20동산고등학교%20자율주행자동차%20대회&descAlignY=85"/>
 </div>
 
+<div align=right>
+    <h6>
+        by jtaeyeon05<br/>
+        (2023/02/20~)
+    </h6>
+</div>
+
 <div align="center">
     <a href="https://github.com/error0918/CarDS/archive/refs/heads/master.zip">
         다운로드
